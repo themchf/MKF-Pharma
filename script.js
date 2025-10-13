@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3) Not found
-    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>".<br>Developer fallback missing. Edit <code>DEV_LOCAL_DB</code> in script.js to add this drug.</div>`;
+    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>".<br></div>`;
   }
 
   // ---------- UI bindings ----------
@@ -666,4 +666,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
 
