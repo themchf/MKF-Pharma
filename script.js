@@ -578,7 +578,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const pharmClass = info.openfda && info.openfda.pharm_class_epc ? info.openfda.pharm_class_epc.join(", ") : (info.pharm_class ? info.pharm_class : "—");
     results.appendChild(makeRow("Drug Class", escapeHtml(pharmClass)));
-
     results.appendChild(makeRow("Indications", arrayToHtmlList(info.indications_and_usage || info.indications || "—")));
     results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(info.mechanism_of_action || "—")));
 // ---------- Usage ----------
@@ -675,6 +674,7 @@ for (const field of possibleUsageFields) {
   // ---------- Init ----------
   renderHistory();
 });
+
 
 
 
