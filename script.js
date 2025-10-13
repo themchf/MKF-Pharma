@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn("OpenFDA failed:", err.message);
     }
 
-    // 2) Fallback: DEV_LOCAL_DB (developer can add entries here in script.js)
+    // 2) Fallback: Please Wait for Updates.
     const key = name.toLowerCase();
     if (DEV_LOCAL_DB[key]) {
       renderFromLocal(DEV_LOCAL_DB[key]);
@@ -186,5 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
 
 
