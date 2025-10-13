@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MKF Pharma</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+<header>
+<h1>MKF Pharma</h1>
+<p class="muted">Type a drug name and get clinical information: class, indications, mechanism, side effects, contraindications, interactions, pregnancy risk.</p>
+</header>
+
+
+<div class="card">
+<div class="upload">
+<div class="field" style="flex:1">
+<label for="drug-input" class="muted">Drug name</label>
+<input id="drug-input" type="text" placeholder="e.g. aspirin, amoxicillin, metformin" />
+</div>
+<div class="inline-fields">
+<button id="search-btn">Search</button>
+<button id="sample-btn">Sample: aspirin</button>
+</div>
+</div>
+
+
+<div id="results" class="card hidden" style="margin-top:16px"></div>
+
+
+<div class="disclaimer">Disclaimer: This tool is for educational/demo use. Verify all clinical decisions with authoritative sources.</div>
+</div>
+
+
+<div class="card" style="margin-top:18px">
+<div class="muted">History</div>
+<div id="history-list"></div>
+</div>
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>
