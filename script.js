@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     interactions: ["Methotrexate — reduced clearance", "Oral contraceptives — minor reduced efficacy"],
     pregnancy: "Generally safe (Category B)."
   },
- const DRUG_DB = {
   "paracetamol": {
     name: "Paracetamol",
     class: "Analgesic, Antipyretic",
@@ -670,6 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
 
 
 
