@@ -655,7 +655,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3) Not found
-    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>".<br>Please Wait for Updates.</div>`;  }
+    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>".<br>Please Wait for Updates.</div>`;
+  }
 
   // ---------- UI bindings ----------
   searchBtn.addEventListener("click", () => doSearch(input.value));
@@ -665,6 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
 
 
 
