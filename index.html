@@ -1,46 +1,47 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>MKF Pharma</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MKF Pharma</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-<header>
-<h1>MKF Pharma</h1>
-<p class="muted">Type a drug name and get clinical information: class, indications, mechanism, side effects, contraindications, interactions, pregnancy risk.</p>
-</header>
+  <div class="container">
+    <header>
+      <h1>MKF Pharma</h1>
+      <p class="muted">Type a drug name and get clinical information: Class, Indications, Mechanism, Side effects, Contraindications, Interactions, Pregnancy Risk.</p>
+    </header>
 
+    <div class="card">
+      <div class="upload">
+        <div class="field" style="flex:1">
+          <label for="drug-input" class="muted">Drug name</label>
+          <input id="drug-input" type="text" placeholder="e.g. aspirin, amoxicillin, metformin" autocomplete="off" />
+        </div>
 
-<div class="card">
-<div class="upload">
-<div class="field" style="flex:1">
-<label for="drug-input" class="muted">Drug name</label>
-<input id="drug-input" type="text" placeholder="e.g. aspirin, amoxicillin, metformin" />
-</div>
-<div class="inline-fields">
-<button id="search-btn">Search</button>
-<button id="sample-btn">Sample: aspirin</button>
-</div>
-</div>
+        <div class="inline-fields">
+          <button id="search-btn">Search</button>
+          <button id="sample-btn" type="button">Sample: aspirin</button>
+        </div>
+      </div>
 
+      <div id="results" class="card hidden" style="margin-top:16px"></div>
 
-<div id="results" class="card hidden" style="margin-top:16px"></div>
+      <div class="disclaimer">Disclaimer: This is an educational/demo tool. Verify clinical decisions with authoritative sources.</div>
+    </div>
 
+    <div class="card" style="margin-top:18px">
+      <div class="muted">Search history (click to open)</div>
+      <div id="history-list"></div>
+    </div>
 
-<div class="disclaimer">Disclaimer: This tool is for educational/demo use. Verify all clinical decisions with authoritative sources.</div>
-</div>
+    <div class="card" style="margin-top:18px">
+      <div class="muted">Developer: Add more drugs</div>
+      <div class="small-muted">Open <code>script.js</code> and add entries inside the <code>DEV_LOCAL_DB</code> object near the top (developer-only local entries; not editable through the UI).</div>
+    </div>
+  </div>
 
-
-<div class="card" style="margin-top:18px">
-<div class="muted">History</div>
-<div id="history-list"></div>
-</div>
-</div>
-
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
