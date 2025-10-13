@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3) Not found
-    results.innerHTML = `<div class="error">No online data found</div>;
+    results.innerHTML = `<div class="error">No online data found</div>`;
   }
 
   // ---------- UI bindings ----------
