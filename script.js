@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
       interactions: ["Methotrexate — increased toxicity risk", "Allopurinol — increased rash risk"],
       pregnancy: "Generally considered safe (Category B)."
     },
-    const DRUG_DB = {
   "paracetamol": {
     name: "Paracetamol",
     class: "Analgesic, Antipyretic",
@@ -667,3 +666,4 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
