@@ -8,27 +8,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add more drug objects here keyed by lowercase name or common generic.
   // Example: 'metformin': { name: 'Metformin', class: 'Biguanide', ... }
   const DEV_LOCAL_DB = {
+    "aspirin": {
+      name: "Aspirin",
+      class: "Salicylate (NSAID)",
+      indications: ["Pain", "Fever", "Inflammation", "Low-dose for MI prevention"],
+      mechanism: "Irreversible inhibition of COX-1 and COX-2 → reduced prostaglandins & thromboxane A2.",
+      sideEffects: ["Gastrointestinal bleeding", "Tinnitus at high doses", "Allergic reactions", "Reye syndrome in children"],
+      contraindications: ["Active peptic ulcer disease", "Bleeding disorders", "Known salicylate hypersensitivity"],
+      interactions: ["Anticoagulants (warfarin) — increased bleeding", "Other NSAIDs — reduced cardioprotective effect"],
+      pregnancy: "Avoid in late pregnancy — risk of premature ductus arteriosus closure (Category D near term)."
+    },
+    "amoxicillin": {
+      name: "Amoxicillin",
+      class: "Beta-lactam antibiotic (Aminopenicillin)",
+      indications: ["Bacterial infections (otitis media, sinusitis, pneumonia, UTI, skin)"],
+      mechanism: "Inhibits bacterial cell-wall synthesis by binding PBPs → lysis.",
+      sideEffects: ["Hypersensitivity reactions (rash, anaphylaxis)", "Gastrointestinal upset", "Superinfection (candida)"],
+      contraindications: ["History of penicillin anaphylaxis"],
+      interactions: ["Methotrexate — increased toxicity risk", "Allopurinol — increased rash risk"],
+      pregnancy: "Generally considered safe (Category B)."
+    },
     const DRUG_DB = {
-  "aspirin": {
-    name: "Aspirin",
-    class: "Salicylate (NSAID)",
-    indications: ["Pain", "Fever", "Inflammation", "Low-dose for MI prevention"],
-    mechanism: "Irreversible inhibition of COX-1 and COX-2 → reduced prostaglandins & thromboxane A2.",
-    sideEffects: ["Gastrointestinal bleeding", "Tinnitus at high doses", "Allergic reactions", "Reye syndrome in children"],
-    contraindications: ["Active peptic ulcer disease", "Bleeding disorders", "Known salicylate hypersensitivity"],
-    interactions: ["Anticoagulants (warfarin) — increased bleeding", "Other NSAIDs — reduced cardioprotective effect"],
-    pregnancy: "Avoid in late pregnancy — risk of premature ductus arteriosus closure (Category D near term)."
-  },
-  "amoxicillin": {
-    name: "Amoxicillin",
-    class: "Beta-lactam antibiotic (Penicillin)",
-    indications: ["Respiratory tract infections", "UTIs", "Skin infections", "H. pylori eradication (with clarithromycin)"],
-    mechanism: "Inhibits bacterial cell wall synthesis by binding PBPs → bactericidal.",
-    sideEffects: ["Diarrhea", "Rash", "Allergic reactions", "Rare hepatotoxicity"],
-    contraindications: ["Penicillin allergy"],
-    interactions: ["Methotrexate — reduced clearance", "Oral contraceptives — minor reduced efficacy"],
-    pregnancy: "Generally safe (Category B)."
-  },
   "paracetamol": {
     name: "Paracetamol",
     class: "Analgesic, Antipyretic",
@@ -594,9 +594,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const pharmClass = info.openfda && info.openfda.pharm_class_epc ? info.openfda.pharm_class_epc.join(", ") : (info.pharm_class ? info.pharm_class : "—");
     results.appendChild(makeRow("Drug Class", escapeHtml(pharmClass)));
+
     results.appendChild(makeRow("Indications", arrayToHtmlList(info.indications_and_usage || info.indications || "—")));
     results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(info.mechanism_of_action || "—")));
-    results.appendChild(makeRow("Usage", arrayToHtmlList(info.dosage_and_administration || info.how_supplied || info.general_precautions || "—")));
     results.appendChild(makeRow("Side Effects (Adverse Reactions)", arrayToHtmlList(info.adverse_reactions || info.adverse_reaction || "—")));
     results.appendChild(makeRow("Contraindications", arrayToHtmlList(info.contraindications || "—")));
     results.appendChild(makeRow("Interactions", arrayToHtmlList(info.drug_interactions || "—")));
@@ -618,7 +618,6 @@ document.addEventListener("DOMContentLoaded", () => {
     results.appendChild(makeRow("Drug Class", escapeHtml(drugObj.class || "—")));
     results.appendChild(makeRow("Indications", arrayToHtmlList(drugObj.indications)));
     results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(drugObj.mechanism)));
-    results.appendChild(makeRow("Usage", arrayToHtmlList(drugObj.usage)));
     results.appendChild(makeRow("Side Effects", arrayToHtmlList(drugObj.sideEffects)));
     results.appendChild(makeRow("Contraindications", arrayToHtmlList(drugObj.contraindications)));
     results.appendChild(makeRow("Interactions", arrayToHtmlList(drugObj.interactions)));
@@ -668,13 +667,3 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
-
-
-
-
-
-
-
-
-
-
