@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 3) Not found
-    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>".<br></div>`;
+    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>"</div>`;
   }
 
   // ---------- UI bindings ----------
@@ -666,5 +666,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
 
 
