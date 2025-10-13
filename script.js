@@ -581,7 +581,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     results.appendChild(makeRow("Indications", arrayToHtmlList(info.indications_and_usage || info.indications || "—")));
     results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(info.mechanism_of_action || "—")));
-    results.appendChild(makeRow("Usage", arrayToHtmlList(info.dosage_and_administration || info.how_supplied || info.general_precautions || "—")));
+   results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(info.mechanism_of_action || "—")));
+// ---------- Usage ----------
+let usageArr = [];
+if (Array.isArray(info.dosage_and_administration) && info.dosage_and_administration.length) {
+  usageArr = info.dosage_and_administration;
+} else if (Array.isArray(info.indications_and_usage) && info.indications_and_usage.length) {
+  usageArr = info.indications_and_usage;
+} else if (Array.isArray(info.warnings) && info.warnings.length) {
+  usageArr = info.warnings;
+} else if (Array.isArray(info.precautions) && info.precautions.length) {
+  usageArr = info.precautions;
+}
+    results.appendChild(makeRow("Usage", arrayToHtmlList(usageArr.length ? usageArr : "—")));
     results.appendChild(makeRow("Side Effects (Adverse Reactions)", arrayToHtmlList(info.adverse_reactions || info.adverse_reaction || "—")));
     results.appendChild(makeRow("Contraindications", arrayToHtmlList(info.contraindications || "—")));
     results.appendChild(makeRow("Interactions", arrayToHtmlList(info.drug_interactions || "—")));
@@ -653,6 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- Init ----------
   renderHistory();
 });
+
 
 
 
