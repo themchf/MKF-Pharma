@@ -1,676 +1,681 @@
-// MKF Pharma - script.js (online-first, developer-editable local DB)
-// - Primary data source: OpenFDA drug label API (https://api.fda.gov/drug/label)
-// - If OpenFDA does not return results, the app falls back to DEV_LOCAL_DB
-// - Developer-only local DB: edit DEV_LOCAL_DB below to add more drugs (no public add UI)
+// -------------------- MKF Pharma - script.js --------------------
+// Local Drug Database Version with full clinical fields
+// Includes: Class, Indications, Mechanism, Usage, Side Effects, Contraindications, Interactions, Pregnancy
+// Also saves search history permanently using localStorage
 
-document.addEventListener("DOMContentLoaded", () => {
-  // ---------- Developer local DB (edit this object ONLY as a developer) ----------
-  // Add more drug objects here keyed by lowercase name or common generic.
-  // Example: 'metformin': { name: 'Metformin', class: 'Biguanide', ... }
-  const DEV_LOCAL_DB = {
-    "aspirin": {
-      name: "Aspirin",
-      class: "Salicylate (NSAID)",
-      indications: ["Pain", "Fever", "Inflammation", "Low-dose for MI prevention"],
-      mechanism: "Irreversible inhibition of COX-1 and COX-2 → reduced prostaglandins & thromboxane A2.",
-      sideEffects: ["Gastrointestinal bleeding", "Tinnitus at high doses", "Allergic reactions", "Reye syndrome in children"],
-      contraindications: ["Active peptic ulcer disease", "Bleeding disorders", "Known salicylate hypersensitivity"],
-      interactions: ["Anticoagulants (warfarin) — increased bleeding", "Other NSAIDs — reduced cardioprotective effect"],
-      pregnancy: "Avoid in late pregnancy — risk of premature ductus arteriosus closure (Category D near term)."
-    },
-    "amoxicillin": {
-      name: "Amoxicillin",
-      class: "Beta-lactam antibiotic (Aminopenicillin)",
-      indications: ["Bacterial infections (otitis media, sinusitis, pneumonia, UTI, skin)"],
-      mechanism: "Inhibits bacterial cell-wall synthesis by binding PBPs → lysis.",
-      sideEffects: ["Hypersensitivity reactions (rash, anaphylaxis)", "Gastrointestinal upset", "Superinfection (candida)"],
-      contraindications: ["History of penicillin anaphylaxis"],
-      interactions: ["Methotrexate — increased toxicity risk", "Allopurinol — increased rash risk"],
-      pregnancy: "Generally considered safe (Category B)."
-    },
-    "paracetamol": {
-    name: "Paracetamol",
-    class: "Analgesic, Antipyretic",
-    indications: ["Pain", "Fever"],
-    mechanism: "Inhibits central COX enzymes → reduces prostaglandin synthesis in the CNS.",
-    sideEffects: ["Hepatotoxicity in overdose", "Rash (rare)"],
-    contraindications: ["Severe hepatic impairment"],
-    interactions: ["Alcohol — increases hepatotoxicity risk", "Warfarin — enhances anticoagulant effect with long-term use"],
-    pregnancy: "Safe in pregnancy (Category B)."
-    },
-  "ibuprofen": {
-    name: "Ibuprofen",
-    class: "NSAID (Propionic acid derivative)",
-    indications: ["Pain", "Fever", "Inflammation", "Arthritis"],
-    mechanism: "Reversible inhibition of COX-1 and COX-2 → decreased prostaglandin synthesis.",
-    sideEffects: ["Gastric irritation", "Ulceration", "Renal impairment"],
-    contraindications: ["Peptic ulcer", "Renal failure", "NSAID hypersensitivity"],
-    interactions: ["Warfarin — increased bleeding", "ACE inhibitors — reduced antihypertensive effect"],
-    pregnancy: "Avoid in 3rd trimester — risk of ductus arteriosus closure."
+const DEV_LOCAL_DB = {
+  "aspirin": {
+    name: "Aspirin",
+    class: "Salicylate (NSAID)",
+    indications: ["Pain", "Fever", "Inflammation", "Low-dose for MI prevention"],
+    mechanism: "Irreversible inhibition of COX-1 and COX-2 → decreased prostaglandin and thromboxane synthesis.",
+    usage: "Take 1 tablet (325–650 mg) every 4–6 hours as needed for pain or fever; do not exceed 4 g/day.",
+    sideEffects: ["Gastrointestinal bleeding", "Ulceration", "Nausea", "Tinnitus (at high doses)"],
+    contraindications: ["Peptic ulcer disease", "Bleeding disorders", "Children with viral infections (risk of Reye’s syndrome)"],
+    interactions: ["Warfarin", "Corticosteroids", "Alcohol", "Other NSAIDs"],
+    pregnancy: "Avoid in the third trimester due to risk of premature closure of the ductus arteriosus."
   },
+
+  "amoxicillin": {
+    name: "Amoxicillin",
+    class: "Beta-lactam antibiotic (penicillin class)",
+    indications: ["Bacterial infections", "Otitis media", "Sinusitis", "Pneumonia"],
+    mechanism: "Inhibits bacterial cell wall synthesis by binding to penicillin-binding proteins → cell lysis.",
+    usage: "Take 500 mg every 8 hours or 875 mg every 12 hours; complete full course as prescribed.",
+    sideEffects: ["Rash", "Diarrhea", "Nausea", "Allergic reactions (anaphylaxis rare)"],
+    contraindications: ["Hypersensitivity to penicillins or beta-lactams"],
+    interactions: ["Methotrexate (increased toxicity)", "Oral contraceptives (reduced effectiveness)"],
+    pregnancy: "Generally considered safe (Category B)."
+  },
+
   "metformin": {
     name: "Metformin",
-    class: "Biguanide (Antidiabetic)",
-    indications: ["Type 2 diabetes mellitus"],
-    mechanism: "Decreases hepatic glucose production and increases insulin sensitivity.",
-    sideEffects: ["GI upset", "Lactic acidosis (rare)", "Vitamin B12 deficiency"],
-    contraindications: ["Severe renal impairment", "Metabolic acidosis"],
-    interactions: ["Contrast media — increases lactic acidosis risk", "Alcohol — potentiates lactic acidosis"],
-    pregnancy: "Generally safe (Category B)."
+    class: "Biguanide (antidiabetic)",
+    indications: ["Type 2 diabetes mellitus", "Polycystic ovary syndrome (off-label)"],
+    mechanism: "Decreases hepatic glucose production, decreases intestinal absorption of glucose, and improves insulin sensitivity.",
+    usage: "Start with 500 mg once daily with meals; gradually increase to 1000 mg twice daily as tolerated.",
+    sideEffects: ["Nausea", "Diarrhea", "Abdominal discomfort", "Rare: lactic acidosis"],
+    contraindications: ["Severe renal impairment (eGFR < 30 mL/min/1.73 m²)", "Metabolic acidosis", "Severe hepatic disease"],
+    interactions: ["Alcohol", "Iodinated contrast media (hold before and after imaging)", "Cimetidine"],
+    pregnancy: "Generally safe; used in gestational diabetes under supervision."
   },
-  "atorvastatin": {
-    name: "Atorvastatin",
-    class: "HMG-CoA reductase inhibitor (Statin)",
-    indications: ["Hypercholesterolemia", "Cardiovascular risk reduction"],
-    mechanism: "Inhibits HMG-CoA reductase → reduces cholesterol synthesis in liver.",
-    sideEffects: ["Myopathy", "Liver enzyme elevation"],
-    contraindications: ["Active liver disease", "Pregnancy"],
-    interactions: ["Macrolide antibiotics — increased myopathy risk", "Grapefruit juice — increases serum concentration"],
-    pregnancy: "Contraindicated (Category X)."
+  
+  "ibuprofen": {
+    name: "Ibuprofen",
+    class: "NSAID (propionic acid derivative)",
+    indications: ["Pain", "Fever", "Inflammation", "Arthritis"],
+    mechanism: "Reversibly inhibits COX-1 and COX-2, decreasing prostaglandin synthesis.",
+    usage: "200–400 mg orally every 6–8 hours as needed (max 3200 mg/day).",
+    sideEffects: ["Gastric irritation", "Ulceration", "Renal impairment"],
+    contraindications: ["Peptic ulcer", "Severe renal impairment", "NSAID hypersensitivity"],
+    interactions: ["Warfarin", "ACE inhibitors", "Aspirin (reduces cardioprotective effect)"],
+    pregnancy: "Avoid in 3rd trimester due to risk of ductus arteriosus closure."
   },
   "omeprazole": {
     name: "Omeprazole",
     class: "Proton pump inhibitor (PPI)",
-    indications: ["GERD", "Peptic ulcer", "Zollinger–Ellison syndrome"],
-    mechanism: "Irreversibly inhibits H+/K+ ATPase in gastric parietal cells → suppresses acid secretion.",
-    sideEffects: ["Headache", "B12 deficiency (long-term)", "Hypomagnesemia"],
-    contraindications: ["Hypersensitivity to PPIs"],
-    interactions: ["Clopidogrel — reduced antiplatelet effect", "Warfarin — increases INR"],
-    pregnancy: "Considered safe (Category C)."
+    indications: ["GERD", "Peptic ulcer disease", "Zollinger–Ellison syndrome"],
+    mechanism: "Irreversibly inhibits H+/K+ ATPase in gastric parietal cells, suppressing acid secretion.",
+    usage: "20–40 mg orally once daily before breakfast.",
+    sideEffects: ["Headache", "B12 deficiency (long-term use)", "Hypomagnesemia"],
+    contraindications: ["Hypersensitivity to omeprazole"],
+    interactions: ["Clopidogrel", "Warfarin", "Ketoconazole"],
+    pregnancy: "Generally considered safe (Category C)."
+  },
+  "atorvastatin": {
+    name: "Atorvastatin",
+    class: "HMG-CoA reductase inhibitor (statin)",
+    indications: ["Hypercholesterolemia", "Cardiovascular risk reduction"],
+    mechanism: "Inhibits HMG-CoA reductase, reducing hepatic cholesterol synthesis.",
+    usage: "10–80 mg orally once daily in the evening.",
+    sideEffects: ["Myalgia", "Liver enzyme elevation", "Rhabdomyolysis (rare)"],
+    contraindications: ["Active liver disease", "Pregnancy", "Lactation"],
+    interactions: ["Macrolide antibiotics", "Grapefruit juice", "Cyclosporine"],
+    pregnancy: "Contraindicated (Category X)."
   },
   "losartan": {
     name: "Losartan",
     class: "Angiotensin II receptor blocker (ARB)",
     indications: ["Hypertension", "Heart failure", "Diabetic nephropathy"],
-    mechanism: "Blocks angiotensin II receptors → vasodilation and reduced aldosterone secretion.",
-    sideEffects: ["Hyperkalemia", "Dizziness", "Renal impairment"],
-    contraindications: ["Pregnancy", "Severe renal artery stenosis"],
-    interactions: ["Potassium supplements — hyperkalemia risk", "NSAIDs — reduced antihypertensive effect"],
-    pregnancy: "Contraindicated (Category D)."
+    mechanism: "Blocks angiotensin II type 1 receptors → vasodilation and reduced aldosterone secretion.",
+    usage: "50 mg orally once daily; may increase to 100 mg/day.",
+    sideEffects: ["Dizziness", "Hyperkalemia", "Fatigue"],
+    contraindications: ["Pregnancy", "Severe hepatic impairment"],
+    interactions: ["Potassium-sparing diuretics", "NSAIDs", "Lithium"],
+    pregnancy: "Contraindicated — fetal toxicity risk (Category D)."
   },
   "enalapril": {
     name: "Enalapril",
     class: "ACE inhibitor",
     indications: ["Hypertension", "Heart failure", "Diabetic nephropathy"],
-    mechanism: "Inhibits ACE → reduces angiotensin II and aldosterone, promotes vasodilation.",
+    mechanism: "Inhibits ACE → decreased angiotensin II and aldosterone production.",
+    usage: "5–20 mg orally once or twice daily.",
     sideEffects: ["Cough", "Hyperkalemia", "Angioedema"],
-    contraindications: ["Pregnancy", "History of angioedema"],
-    interactions: ["Potassium-sparing diuretics — hyperkalemia risk", "NSAIDs — reduced antihypertensive effect"],
-    pregnancy: "Contraindicated (Category D)."
+    contraindications: ["History of angioedema", "Pregnancy", "Bilateral renal artery stenosis"],
+    interactions: ["Potassium supplements", "NSAIDs", "Diuretics"],
+    pregnancy: "Contraindicated — teratogenic (Category D)."
   },
   "furosemide": {
     name: "Furosemide",
     class: "Loop diuretic",
     indications: ["Edema", "Heart failure", "Hypertension"],
-    mechanism: "Inhibits Na⁺/K⁺/2Cl⁻ cotransporter in thick ascending limb → increased sodium and water excretion.",
+    mechanism: "Inhibits Na+/K+/2Cl− cotransporter in the thick ascending loop of Henle.",
+    usage: "20–80 mg orally once or twice daily; adjust as needed.",
     sideEffects: ["Hypokalemia", "Dehydration", "Ototoxicity"],
-    contraindications: ["Severe electrolyte depletion"],
-    interactions: ["Aminoglycosides — increased ototoxicity", "Digoxin — hypokalemia increases toxicity risk"],
-    pregnancy: "Use only if necessary (Category C)."
+    contraindications: ["Severe electrolyte imbalance", "Sulfa allergy"],
+    interactions: ["Aminoglycosides", "NSAIDs", "Digoxin"],
+    pregnancy: "Use with caution (Category C)."
   },
   "hydrochlorothiazide": {
     name: "Hydrochlorothiazide",
     class: "Thiazide diuretic",
     indications: ["Hypertension", "Edema"],
-    mechanism: "Inhibits Na⁺/Cl⁻ reabsorption in distal convoluted tubule.",
-    sideEffects: ["Hypokalemia", "Hyperuricemia", "Hyponatremia"],
+    mechanism: "Inhibits NaCl reabsorption in the distal convoluted tubule.",
+    usage: "12.5–50 mg orally once daily.",
+    sideEffects: ["Hypokalemia", "Hyponatremia", "Hyperuricemia"],
     contraindications: ["Anuria", "Sulfa allergy"],
-    interactions: ["Digoxin — increased toxicity risk", "Lithium — increased levels"],
-    pregnancy: "Avoid if possible (Category B)."
-  },
-  "salbutamol": {
-    name: "Salbutamol",
-    class: "β2-adrenergic agonist (short-acting)",
-    indications: ["Asthma", "COPD (bronchospasm)"],
-    mechanism: "Stimulates β2-receptors → bronchodilation via smooth muscle relaxation.",
-    sideEffects: ["Tremor", "Tachycardia", "Hypokalemia"],
-    contraindications: ["Severe cardiac arrhythmia"],
-    interactions: ["Beta-blockers — antagonize effects"],
-    pregnancy: "Generally safe (Category C)."
+    interactions: ["Lithium", "NSAIDs", "Antidiabetics"],
+    pregnancy: "Use with caution (Category B)."
   },
   "prednisolone": {
     name: "Prednisolone",
-    class: "Corticosteroid",
-    indications: ["Inflammatory diseases", "Asthma", "Autoimmune disorders"],
-    mechanism: "Binds glucocorticoid receptors → suppresses inflammation and immune response.",
-    sideEffects: ["Hyperglycemia", "Osteoporosis", "Cushingoid features"],
-    contraindications: ["Systemic fungal infections", "Live vaccines"],
-    interactions: ["NSAIDs — GI bleeding risk", "Vaccines — reduced efficacy"],
-    pregnancy: "Use if benefits outweigh risks (Category C)."
+    class: "Glucocorticoid",
+    indications: ["Inflammatory disorders", "Asthma", "Autoimmune diseases"],
+    mechanism: "Suppresses inflammation and immune response by modulating gene expression.",
+    usage: "5–60 mg orally per day depending on condition; taper gradually if long-term.",
+    sideEffects: ["Immunosuppression", "Weight gain", "Hyperglycemia"],
+    contraindications: ["Systemic fungal infections"],
+    interactions: ["NSAIDs", "Vaccines", "Diuretics"],
+    pregnancy: "Category C — use only if benefits outweigh risks."
+  },
+  "salbutamol": {
+    name: "Salbutamol",
+    class: "Short-acting beta-2 agonist (SABA)",
+    indications: ["Asthma", "COPD", "Exercise-induced bronchospasm"],
+    mechanism: "Stimulates beta-2 receptors → bronchodilation via smooth muscle relaxation.",
+    usage: "Inhalation: 100–200 µg as needed up to 4 times daily.",
+    sideEffects: ["Tremor", "Tachycardia", "Hypokalemia"],
+    contraindications: ["Severe cardiac disease"],
+    interactions: ["Beta-blockers", "MAOIs", "Diuretics (potassium loss)"],
+    pregnancy: "Generally safe (Category C)."
+  },
+  "budesonide": {
+    name: "Budesonide",
+    class: "Inhaled corticosteroid",
+    indications: ["Asthma", "COPD maintenance therapy"],
+    mechanism: "Reduces airway inflammation by inhibiting cytokine production and immune cell recruitment.",
+    usage: "Inhalation: 200–400 µg twice daily; max 1600 µg/day.",
+    sideEffects: ["Oral thrush", "Hoarseness", "Systemic effects (rare)"],
+    contraindications: ["Untreated infections"],
+    interactions: ["Ketoconazole", "Ritonavir"],
+    pregnancy: "Category B — preferred inhaled corticosteroid in pregnancy."
+  },
+  "insulin glargine": {
+    name: "Insulin Glargine",
+    class: "Long-acting insulin analog",
+    indications: ["Type 1 and Type 2 diabetes mellitus"],
+    mechanism: "Binds insulin receptors → facilitates glucose uptake and glycogen synthesis.",
+    usage: "Subcutaneous: once daily at the same time each day; dose individualized.",
+    sideEffects: ["Hypoglycemia", "Weight gain", "Injection site reactions"],
+    contraindications: ["Hypoglycemia", "Insulin allergy"],
+    interactions: ["Beta-blockers", "Alcohol", "Corticosteroids"],
+    pregnancy: "Safe under supervision (Category C)."
   },
   "warfarin": {
     name: "Warfarin",
-    class: "Vitamin K antagonist (Anticoagulant)",
-    indications: ["Atrial fibrillation", "DVT/PE prevention", "Mechanical heart valves"],
-    mechanism: "Inhibits vitamin K epoxide reductase → reduces synthesis of clotting factors II, VII, IX, X.",
+    class: "Vitamin K antagonist (anticoagulant)",
+    indications: ["Atrial fibrillation", "DVT", "PE", "Mechanical heart valves"],
+    mechanism: "Inhibits vitamin K epoxide reductase → decreased synthesis of clotting factors II, VII, IX, and X.",
+    usage: "2–10 mg orally daily, adjusted to maintain INR 2–3.",
     sideEffects: ["Bleeding", "Skin necrosis", "Teratogenicity"],
-    contraindications: ["Pregnancy", "Bleeding disorders"],
-    interactions: ["NSAIDs — increased bleeding", "Antibiotics — potentiate effect"],
+    contraindications: ["Pregnancy", "Active bleeding", "Recent surgery"],
+    interactions: ["NSAIDs", "Antibiotics", "Amiodarone"],
     pregnancy: "Contraindicated (Category X)."
   },
   "heparin": {
     name: "Heparin",
-    class: "Anticoagulant",
-    indications: ["DVT", "PE", "MI prophylaxis"],
+    class: "Anticoagulant (unfractionated)",
+    indications: ["DVT/PE prevention and treatment", "ACS"],
     mechanism: "Activates antithrombin III → inhibits thrombin and factor Xa.",
-    sideEffects: ["Bleeding", "Heparin-induced thrombocytopenia"],
-    contraindications: ["Active bleeding", "Severe thrombocytopenia"],
-    interactions: ["Aspirin — increased bleeding risk"],
-    pregnancy: "Safe (does not cross placenta)."
+    usage: "IV/SC: dosing depends on indication (e.g., 5000 units SC q8–12h).",
+    sideEffects: ["Bleeding", "Heparin-induced thrombocytopenia (HIT)"],
+    contraindications: ["Active bleeding", "History of HIT"],
+    interactions: ["NSAIDs", "Aspirin", "Thrombolytics"],
+    pregnancy: "Safe in pregnancy (Category C)."
   },
-  "insulin": {
-    name: "Insulin",
-    class: "Peptide hormone (Antidiabetic)",
-    indications: ["Type 1 diabetes", "Type 2 diabetes (when oral agents fail)"],
-    mechanism: "Promotes glucose uptake into cells via GLUT4 transporters.",
-    sideEffects: ["Hypoglycemia", "Weight gain"],
-    contraindications: ["Hypoglycemia"],
-    interactions: ["Beta-blockers — mask hypoglycemia symptoms"],
+  "enoxaparin": {
+    name: "Enoxaparin",
+    class: "Low molecular weight heparin (LMWH)",
+    indications: ["DVT prevention/treatment", "ACS"],
+    mechanism: "Inhibits factor Xa via antithrombin III activation.",
+    usage: "40 mg SC daily for prophylaxis; 1 mg/kg SC q12h for treatment.",
+    sideEffects: ["Bleeding", "Thrombocytopenia (rare)"],
+    contraindications: ["Active bleeding", "HIT history"],
+    interactions: ["NSAIDs", "Aspirin"],
     pregnancy: "Safe (Category B)."
   },
-  "metoprolol": {
-    name: "Metoprolol",
-    class: "Selective β1-blocker",
-    indications: ["Hypertension", "Angina", "Heart failure"],
-    mechanism: "Blocks β1-receptors → reduces heart rate and cardiac output.",
-    sideEffects: ["Bradycardia", "Fatigue", "Cold extremities"],
-    contraindications: ["Severe bradycardia", "Heart block"],
-    interactions: ["Verapamil — risk of heart block", "Insulin — masks hypoglycemia"],
-    pregnancy: "Use if benefits outweigh risks (Category C)."
+  "clopidogrel": {
+    name: "Clopidogrel",
+    class: "Antiplatelet (P2Y12 inhibitor)",
+    indications: ["MI prevention", "Stroke prevention", "Post-stent therapy"],
+    mechanism: "Irreversibly blocks ADP receptor on platelets, preventing activation and aggregation.",
+    usage: "75 mg orally once daily.",
+    sideEffects: ["Bleeding", "Rash", "GI discomfort"],
+    contraindications: ["Active bleeding", "Severe liver impairment"],
+    interactions: ["Omeprazole", "NSAIDs"],
+    pregnancy: "Category B — use if benefits outweigh risks."
   },
-  "propranolol": {
-    name: "Propranolol",
-    class: "Non-selective β-blocker",
-    indications: ["Hypertension", "Anxiety", "Migraine prophylaxis", "Thyrotoxicosis"],
-    mechanism: "Blocks β1 and β2 receptors → decreases heart rate and contractility.",
-    sideEffects: ["Bronchospasm", "Bradycardia", "Fatigue"],
-    contraindications: ["Asthma", "Severe bradycardia"],
-    interactions: ["Verapamil — additive bradycardia"],
-    pregnancy: "Category C — use with caution."
+  "levothyroxine": {
+    name: "Levothyroxine",
+    class: "Synthetic thyroid hormone (T4)",
+    indications: ["Hypothyroidism", "Myxedema coma"],
+    mechanism: "Replaces endogenous thyroxine, regulating metabolism and growth.",
+    usage: "25–150 µg orally once daily before breakfast.",
+    sideEffects: ["Palpitations", "Weight loss", "Insomnia (overdose)"],
+    contraindications: ["Untreated adrenal insufficiency"],
+    interactions: ["Iron", "Calcium", "Warfarin"],
+    pregnancy: "Safe; dose adjustment often required (Category A)."
   },
-  "nitroglycerin": {
-    name: "Nitroglycerin",
-    class: "Nitrate vasodilator",
-    indications: ["Angina pectoris", "Heart failure"],
-    mechanism: "Releases nitric oxide → increases cGMP → smooth muscle relaxation → vasodilation.",
-    sideEffects: ["Headache", "Hypotension", "Reflex tachycardia"],
-    contraindications: ["Severe anemia", "Use with PDE5 inhibitors"],
-    interactions: ["Sildenafil — severe hypotension"],
-    pregnancy: "Category C — use with caution."
+  "sertraline": {
+    name: "Sertraline",
+    class: "SSRI (antidepressant)",
+    indications: ["Depression", "Anxiety", "OCD", "PTSD"],
+    mechanism: "Selectively inhibits serotonin reuptake in the CNS.",
+    usage: "50–200 mg orally once daily.",
+    sideEffects: ["Nausea", "Insomnia", "Sexual dysfunction"],
+    contraindications: ["MAOI use within 14 days"],
+    interactions: ["MAOIs", "Triptans", "Warfarin"],
+    pregnancy: "Generally safe (Category C)."
   },
   "diazepam": {
     name: "Diazepam",
     class: "Benzodiazepine",
-    indications: ["Anxiety", "Seizures", "Muscle spasm", "Alcohol withdrawal"],
-    mechanism: "Enhances GABA-A receptor activity → increases inhibitory neurotransmission.",
-    sideEffects: ["Sedation", "Dependence", "Respiratory depression (high doses)"],
+    indications: ["Anxiety", "Seizures", "Muscle spasms"],
+    mechanism: "Enhances GABA-A receptor activity → CNS depression.",
+    usage: "2–10 mg orally 2–4 times daily.",
+    sideEffects: ["Sedation", "Dependence", "Respiratory depression"],
     contraindications: ["Severe hepatic impairment", "Sleep apnea"],
-    interactions: ["Alcohol — additive CNS depression", "Opioids — respiratory depression"],
-    pregnancy: "Avoid (Category D)."
+    interactions: ["Alcohol", "Opioids", "Other CNS depressants"],
+    pregnancy: "Avoid unless necessary (Category D)."
   },
   "morphine": {
     name: "Morphine",
     class: "Opioid analgesic",
-    indications: ["Severe pain", "MI-related pain", "Pulmonary edema (acute)"],
-    mechanism: "Mu-opioid receptor agonist → inhibits pain transmission and alters pain perception.",
-    sideEffects: ["Respiratory depression", "Constipation", "Sedation", "Dependence"],
+    indications: ["Severe pain", "MI pain relief", "Pulmonary edema (palliative)"],
+    mechanism: "Binds µ-opioid receptors → inhibits pain pathways.",
+    usage: "Oral: 10–30 mg every 4 hours as needed; IV: 2–10 mg q4h.",
+    sideEffects: ["Respiratory depression", "Constipation", "Nausea"],
     contraindications: ["Respiratory depression", "Head injury"],
-    interactions: ["Alcohol — enhances CNS depression", "MAOIs — risk of serotonin syndrome"],
-    pregnancy: "Use only if necessary (Category C)."
-  },
-  "ondansetron": {
-    name: "Ondansetron",
-    class: "5-HT3 receptor antagonist",
-    indications: ["Nausea and vomiting (chemotherapy, postoperative)"],
-    mechanism: "Blocks serotonin receptors in the chemoreceptor trigger zone and vagal afferents.",
-    sideEffects: ["Constipation", "Headache", "QT prolongation"],
-    contraindications: ["Congenital long QT syndrome"],
-    interactions: ["SSRIs — risk of serotonin syndrome"],
-    pregnancy: "Category B — considered safe."
-  },
-  "levothyroxine": {
-    name: "Levothyroxine",
-    class: "Thyroid hormone replacement",
-    indications: ["Hypothyroidism"],
-    mechanism: "Synthetic T4 converted to active T3 → increases metabolism.",
-    sideEffects: ["Tachycardia", "Weight loss (overdose)", "Insomnia"],
-    contraindications: ["Untreated adrenal insufficiency"],
-    interactions: ["Iron — reduces absorption", "Warfarin — enhances effect"],
-    pregnancy: "Safe and required (Category A)."
-  },
-  "fluoxetine": {
-    name: "Fluoxetine",
-    class: "SSRI (Antidepressant)",
-    indications: ["Depression", "OCD", "Anxiety disorders"],
-    mechanism: "Inhibits serotonin reuptake → increases synaptic serotonin levels.",
-    sideEffects: ["Insomnia", "Sexual dysfunction", "Nausea"],
-    contraindications: ["MAOI use within 14 days"],
-    interactions: ["MAOIs — serotonin syndrome", "Warfarin — increases bleeding risk"],
+    interactions: ["Alcohol", "Benzodiazepines", "MAOIs"],
     pregnancy: "Use with caution (Category C)."
   },
-  "sertraline": {
-    name: "Sertraline",
-    class: "SSRI (Antidepressant)",
-    indications: ["Depression", "PTSD", "Anxiety"],
-    mechanism: "Blocks serotonin reuptake transporter → increases serotonin availability.",
-    sideEffects: ["GI upset", "Sexual dysfunction", "Insomnia"],
-    contraindications: ["Concurrent MAOI use"],
-    interactions: ["MAOIs — serotonin syndrome risk"],
-    pregnancy: "Category C — use if benefits outweigh risks."
+  "codeine": {
+    name: "Codeine",
+    class: "Opioid analgesic & antitussive",
+    indications: ["Mild to moderate pain", "Cough suppression"],
+    mechanism: "Converted to morphine in the liver → µ-opioid receptor agonist.",
+    usage: "15–60 mg orally every 4–6 hours as needed (max 360 mg/day).",
+    sideEffects: ["Constipation", "Drowsiness", "Nausea"],
+    contraindications: ["Respiratory depression", "Children <12 years"],
+    interactions: ["Alcohol", "Benzodiazepines", "MAOIs"],
+    pregnancy: "Use only if necessary (Category C)."
   },
-  "clozapine": {
-    name: "Clozapine",
-    class: "Atypical antipsychotic",
-    indications: ["Treatment-resistant schizophrenia"],
-    mechanism: "Blocks D2 and 5-HT2A receptors.",
-    sideEffects: ["Agranulocytosis", "Weight gain", "Seizures"],
-    contraindications: ["History of agranulocytosis"],
-    interactions: ["CYP1A2 inhibitors — increase levels"],
-    pregnancy: "Category B — use cautiously."
-  },
-  "haloperidol": {
-    name: "Haloperidol",
-    class: "Typical antipsychotic (Butyrophenone)",
-    indications: ["Schizophrenia", "Delirium", "Tics"],
-    mechanism: "Blocks D2 receptors in mesolimbic pathway.",
-    sideEffects: ["Extrapyramidal symptoms", "QT prolongation"],
-    contraindications: ["Parkinson’s disease"],
-    interactions: ["CYP3A4 inhibitors — increased toxicity"],
-    pregnancy: "Category C — use cautiously."
-  },
-  "phenytoin": {
-    name: "Phenytoin",
-    class: "Anticonvulsant",
-    indications: ["Epilepsy", "Seizures"],
-    mechanism: "Blocks voltage-gated Na+ channels → stabilizes neuronal membranes.",
-    sideEffects: ["Gingival hyperplasia", "Ataxia", "Nystagmus"],
-    contraindications: ["Sinus bradycardia", "AV block"],
-    interactions: ["Warfarin — altered metabolism", "Oral contraceptives — decreased efficacy"],
-    pregnancy: "Category D — teratogenic."
-  },
-  "valproate": {
-    name: "Valproate",
-    class: "Anticonvulsant",
-    indications: ["Epilepsy", "Bipolar disorder", "Migraine prophylaxis"],
-    mechanism: "Increases GABA concentration and blocks Na+ channels.",
-    sideEffects: ["Hepatotoxicity", "Weight gain", "Tremor", "Teratogenicity"],
-    contraindications: ["Liver disease", "Pregnancy"],
-    interactions: ["Phenytoin — altered metabolism"],
-    pregnancy: "Contraindicated (Category D/X)."
-  },
-  "levetiracetam": {
-    name: "Levetiracetam",
-    class: "Anticonvulsant",
-    indications: ["Epilepsy"],
-    mechanism: "Binds SV2A vesicle protein → modulates neurotransmitter release.",
-    sideEffects: ["Fatigue", "Irritability", "Dizziness"],
-    contraindications: ["Hypersensitivity"],
-    interactions: ["Minimal clinically significant interactions"],
-    pregnancy: "Category C — use with caution."
-  },
-  "cetirizine": {
-    name: "Cetirizine",
-    class: "Second-generation antihistamine",
-    indications: ["Allergic rhinitis", "Urticaria"],
-    mechanism: "Blocks H1 receptors → reduces allergic symptoms.",
-    sideEffects: ["Drowsiness (mild)", "Dry mouth"],
-    contraindications: ["Severe renal impairment"],
-    interactions: ["Alcohol — additive sedation"],
-    pregnancy: "Category B — considered safe."
-  },
-  "loratadine": {
-    name: "Loratadine",
-    class: "Second-generation antihistamine",
-    indications: ["Allergic rhinitis", "Urticaria"],
-    mechanism: "Selectively blocks H1 histamine receptors.",
-    sideEffects: ["Headache", "Dry mouth"],
-    contraindications: ["Hypersensitivity"],
-    interactions: ["Ketoconazole — increases loratadine levels"],
-    pregnancy: "Category B — safe."
-  },
-  "dexamethasone": {
-    name: "Dexamethasone",
-    class: "Glucocorticoid",
-    indications: ["Inflammation", "Allergic reactions", "Cerebral edema"],
-    mechanism: "Binds glucocorticoid receptors → suppresses immune response.",
-    sideEffects: ["Hyperglycemia", "Immunosuppression", "Osteoporosis"],
-    contraindications: ["Systemic fungal infection"],
-    interactions: ["NSAIDs — increased ulcer risk"],
-    pregnancy: "Category C — use if benefits outweigh risks."
+  "ceftriaxone": {
+    name: "Ceftriaxone",
+    class: "Cephalosporin (3rd generation antibiotic)",
+    indications: ["Pneumonia", "Meningitis", "UTI", "Gonorrhea"],
+    mechanism: "Inhibits bacterial cell wall synthesis → bactericidal.",
+    usage: "IV/IM: 1–2 g once daily (max 4 g/day).",
+    sideEffects: ["Diarrhea", "Allergic reactions", "Biliary sludging"],
+    contraindications: ["Severe penicillin allergy", "Neonates with hyperbilirubinemia"],
+    interactions: ["Calcium-containing IV solutions"],
+    pregnancy: "Safe (Category B)."
   },
   "azithromycin": {
     name: "Azithromycin",
     class: "Macrolide antibiotic",
-    indications: ["Respiratory infections", "Chlamydia", "Skin infections"],
-    mechanism: "Binds 50S ribosomal subunit → inhibits bacterial protein synthesis.",
-    sideEffects: ["GI upset", "QT prolongation"],
-    contraindications: ["Hepatic dysfunction"],
-    interactions: ["Warfarin — increases bleeding risk"],
-    pregnancy: "Safe (Category B)."
+    indications: ["Respiratory infections", "Skin infections", "STIs"],
+    mechanism: "Inhibits bacterial 50S ribosomal subunit → prevents protein synthesis.",
+    usage: "500 mg orally on day 1, then 250 mg once daily on days 2–5.",
+    sideEffects: ["Diarrhea", "QT prolongation", "Hepatotoxicity"],
+    contraindications: ["Liver dysfunction", "QT prolongation"],
+    interactions: ["Warfarin", "Digoxin", "Antacids"],
+    pregnancy: "Generally safe (Category B)."
   },
   "ciprofloxacin": {
     name: "Ciprofloxacin",
     class: "Fluoroquinolone antibiotic",
-    indications: ["UTI", "GI infections", "Respiratory infections"],
-    mechanism: "Inhibits DNA gyrase and topoisomerase IV.",
-    sideEffects: ["Tendon rupture", "QT prolongation", "GI upset"],
-    contraindications: ["Pregnancy", "Children (cartilage damage)"],
-    interactions: ["Antacids — reduce absorption"],
+    indications: ["UTI", "Gastrointestinal infections", "Bone/joint infections"],
+    mechanism: "Inhibits bacterial DNA gyrase and topoisomerase IV.",
+    usage: "250–750 mg orally every 12 hours.",
+    sideEffects: ["Tendonitis", "GI upset", "Photosensitivity"],
+    contraindications: ["Children", "Pregnancy"],
+    interactions: ["Antacids", "Warfarin", "Theophylline"],
     pregnancy: "Avoid (Category C)."
-  },
-  "ceftriaxone": {
-    name: "Ceftriaxone",
-    class: "Third-generation cephalosporin",
-    indications: ["Meningitis", "Pneumonia", "UTI", "Gonorrhea"],
-    mechanism: "Inhibits bacterial cell wall synthesis (binds PBPs).",
-    sideEffects: ["Diarrhea", "Allergic reactions", "Biliary sludge"],
-    contraindications: ["Severe penicillin allergy"],
-    interactions: ["Calcium IV solutions — precipitation risk"],
-    pregnancy: "Safe (Category B)."
   },
   "metronidazole": {
     name: "Metronidazole",
-    class: "Nitroimidazole antibiotic",
-    indications: ["Anaerobic infections", "Trichomoniasis", "Giardiasis"],
-    mechanism: "Forms toxic free radicals → damages bacterial DNA.",
-    sideEffects: ["Metallic taste", "Disulfiram-like reaction with alcohol"],
-    contraindications: ["Alcohol use", "First trimester pregnancy"],
-    interactions: ["Warfarin — increases anticoagulant effect"],
-    pregnancy: "Avoid in 1st trimester (Category B)."
+    class: "Nitroimidazole antibiotic/antiprotozoal",
+    indications: ["Anaerobic infections", "Bacterial vaginosis", "Giardiasis"],
+    mechanism: "Forms toxic free radicals that damage microbial DNA.",
+    usage: "500 mg orally/IV every 8 hours for 7–10 days.",
+    sideEffects: ["Metallic taste", "Nausea", "Disulfiram-like reaction with alcohol"],
+    contraindications: ["First trimester of pregnancy", "Alcohol use"],
+    interactions: ["Alcohol", "Warfarin", "Phenytoin"],
+    pregnancy: "Avoid in 1st trimester (Category B after)."
   },
-  "gentamicin": {
-    name: "Gentamicin",
-    class: "Aminoglycoside antibiotic",
-    indications: ["Severe Gram-negative infections", "Sepsis"],
-    mechanism: "Binds 30S ribosomal subunit → inhibits protein synthesis (bactericidal).",
-    sideEffects: ["Nephrotoxicity", "Ototoxicity"],
-    contraindications: ["Renal impairment"],
-    interactions: ["Loop diuretics — increased ototoxicity"],
-    pregnancy: "Category D — use only if life-saving."
+  "doxycycline": {
+    name: "Doxycycline",
+    class: "Tetracycline antibiotic",
+    indications: ["Acne", "Respiratory infections", "Rickettsial diseases"],
+    mechanism: "Inhibits bacterial 30S ribosomal subunit → prevents protein synthesis.",
+    usage: "100 mg orally twice daily.",
+    sideEffects: ["Photosensitivity", "GI irritation", "Tooth discoloration in children"],
+    contraindications: ["Pregnancy", "Children <8 years"],
+    interactions: ["Antacids", "Iron supplements", "Warfarin"],
+    pregnancy: "Contraindicated (Category D)."
   },
-  "vancomycin": {
-    name: "Vancomycin",
-    class: "Glycopeptide antibiotic",
-    indications: ["MRSA", "C. difficile (oral form)"],
-    mechanism: "Inhibits cell wall synthesis by binding D-Ala-D-Ala terminus of peptidoglycan.",
-    sideEffects: ["Red man syndrome", "Nephrotoxicity"],
+  "fluoxetine": {
+    name: "Fluoxetine",
+    class: "SSRI (antidepressant)",
+    indications: ["Depression", "Anxiety", "OCD", "Bulimia nervosa"],
+    mechanism: "Selectively inhibits serotonin reuptake in the CNS.",
+    usage: "20–60 mg orally once daily.",
+    sideEffects: ["Insomnia", "Sexual dysfunction", "GI upset"],
+    contraindications: ["MAOI use within 14 days"],
+    interactions: ["MAOIs", "Tramadol", "Warfarin"],
+    pregnancy: "Category C — may be used if benefits outweigh risks."
+  },
+    "lorazepam": {
+    name: "Lorazepam",
+    class: "Benzodiazepine",
+    indications: ["Anxiety", "Insomnia", "Status epilepticus"],
+    mechanism: "Enhances GABA-A receptor activity → increases inhibitory neurotransmission.",
+    usage: "Oral: 1–4 mg daily in divided doses; IV: 2–4 mg slowly for acute seizures or sedation.",
+    sideEffects: ["Sedation", "Dependence", "Respiratory depression", "Dizziness"],
+    contraindications: ["Severe respiratory insufficiency", "Acute narrow-angle glaucoma"],
+    interactions: ["Alcohol — additive CNS depression", "Opioids — increased respiratory depression", "CYP3A4 inhibitors"],
+    pregnancy: "Category D — avoid if possible; use only if benefits justify risks."
+  },
+  "montelukast": {
+    name: "Montelukast",
+    class: "Leukotriene receptor antagonist",
+    indications: ["Asthma maintenance", "Allergic rhinitis"],
+    mechanism: "Blocks cysteinyl leukotriene (CysLT1) receptors → reduces bronchoconstriction and inflammation.",
+    usage: "Oral: 10 mg once daily in the evening (adults).",
+    sideEffects: ["Headache", "GI upset", "Rare neuropsychiatric events (mood changes)"],
     contraindications: ["Hypersensitivity"],
-    interactions: ["Nephrotoxic drugs — additive effects"],
-    pregnancy: "Category B — use if necessary."
+    interactions: ["Phenobarbital — may reduce montelukast levels"],
+    pregnancy: "Category B — use if clinically indicated."
+  },
+  "salmeterol": {
+    name: "Salmeterol",
+    class: "Long-acting beta-2 agonist (LABA)",
+    indications: ["Asthma (maintenance)", "COPD"],
+    mechanism: "Selective stimulation of β2-adrenergic receptors → prolonged bronchodilation.",
+    usage: "Inhaler: 50 mcg twice daily (do not use for acute bronchospasm).",
+    sideEffects: ["Tremor", "Palpitations", "Throat irritation", "Rare paradoxical bronchospasm"],
+    contraindications: ["Acute bronchospasm as monotherapy"],
+    interactions: ["Beta-blockers — antagonistic effect", "MAOIs — potential interactions"],
+    pregnancy: "Category C — use if benefits outweigh risks."
+  },
+  "allopurinol": {
+    name: "Allopurinol",
+    class: "Xanthine oxidase inhibitor",
+    indications: ["Chronic gout", "Hyperuricemia", "Prevention of tumor lysis syndrome"],
+    mechanism: "Inhibits xanthine oxidase → decreases uric acid production.",
+    usage: "Oral: 100–300 mg once daily; titrate to serum uric acid (max ~800 mg/day in divided doses).",
+    sideEffects: ["Rash", "Hepatotoxicity", "GI upset"],
+    contraindications: ["Hypersensitivity to allopurinol", "Use with caution in renal impairment"],
+    interactions: ["Azathioprine/6-mercaptopurine — increased toxicity", "Warfarin"],
+    pregnancy: "Category C — use if benefits justify risks."
+  },
+  "digoxin": {
+    name: "Digoxin",
+    class: "Cardiac glycoside",
+    indications: ["Heart failure (selected cases)", "Atrial fibrillation/flutter rate control"],
+    mechanism: "Inhibits Na+/K+-ATPase → increases intracellular Ca²⁺ → positive inotropy; also increases vagal tone.",
+    usage: "Oral/IV: typical maintenance 0.125–0.25 mg daily; adjust dosing per renal function and serum levels.",
+    sideEffects: ["Arrhythmias", "Nausea/vomiting", "Visual disturbances (yellow halos)"],
+    contraindications: ["Ventricular fibrillation", "Known digoxin toxicity"],
+    interactions: ["Diuretics (hypokalemia increases toxicity)", "Amiodarone — increases digoxin levels", "Verapamil"],
+    pregnancy: "Category C — use if benefits outweigh risks."
+  },
+  "spironolactone": {
+    name: "Spironolactone",
+    class: "Potassium-sparing diuretic; aldosterone antagonist",
+    indications: ["Heart failure", "Ascites", "Primary hyperaldosteronism", "Resistant hypertension"],
+    mechanism: "Aldosterone receptor antagonist → conserves K⁺ and excretes Na⁺.",
+    usage: "Oral: 25–100 mg once daily; adjust by indication.",
+    sideEffects: ["Hyperkalemia", "Gynecomastia", "Menstrual irregularities"],
+    contraindications: ["Hyperkalemia", "Anuria", "Severe renal impairment"],
+    interactions: ["ACE inhibitors/ARBs — increased hyperkalemia risk", "NSAIDs"],
+    pregnancy: "Category C — use only if benefits outweigh risks."
+  },
+  "ranitidine": {
+    name: "Ranitidine",
+    class: "H2 receptor antagonist",
+    indications: ["Peptic ulcer disease", "GERD", "Stress ulcer prophylaxis"],
+    mechanism: "Competitive H2 receptor antagonist → decreased gastric acid secretion.",
+    usage: "Oral: 150 mg twice daily or 300 mg at bedtime.",
+    sideEffects: ["Headache", "Dizziness", "Constipation/diarrhea"],
+    contraindications: ["Porphyria (relative)"],
+    interactions: ["Drugs requiring gastric acidity for absorption may be affected"],
+    pregnancy: "Category B — use if indicated."
+  },
+  "escitalopram": {
+    name: "Escitalopram",
+    class: "SSRI (antidepressant)",
+    indications: ["Major depressive disorder", "Generalized anxiety disorder"],
+    mechanism: "Selective serotonin reuptake inhibition → increases synaptic serotonin.",
+    usage: "Oral: 10–20 mg once daily.",
+    sideEffects: ["Nausea", "Insomnia", "Sexual dysfunction"],
+    contraindications: ["Concurrent MAOI therapy", "Hypersensitivity"],
+    interactions: ["MAOIs — serotonin syndrome risk", "NSAIDs — bleeding risk"],
+    pregnancy: "Category C — weigh risks and benefits."
+  },
+  "dexamethasone": {
+    name: "Dexamethasone",
+    class: "Glucocorticoid",
+    indications: ["Severe allergic reactions", "Cerebral edema", "Inflammatory conditions", "Antiemetic adjunct in chemo"],
+    mechanism: "Glucocorticoid receptor agonist → potent anti-inflammatory and immunosuppressive effects.",
+    usage: "Oral/IV: 0.5–9 mg/day depending on indication; high-dose for cerebral edema; taper if prolonged use.",
+    sideEffects: ["Hyperglycemia", "Immunosuppression", "Psychiatric disturbances", "Osteoporosis (long-term)"],
+    contraindications: ["Systemic fungal infections", "Live vaccines during therapy"],
+    interactions: ["NSAIDs — increased GI risk", "CYP3A4 inducers/inhibitors"],
+    pregnancy: "Category C — use if benefits outweigh risks."
+  },
+  "hydrocortisone": {
+    name: "Hydrocortisone",
+    class: "Glucocorticoid",
+    indications: ["Adrenal insufficiency", "Severe inflammation", "Allergic reactions"],
+    mechanism: "Replaces/copies endogenous cortisol → anti-inflammatory and metabolic effects.",
+    usage: "Oral: 15–30 mg/day in divided doses for replacement; IV dosing higher for acute situations.",
+    sideEffects: ["Fluid retention", "Hyperglycemia", "Immunosuppression"],
+    contraindications: ["Systemic fungal infections"],
+    interactions: ["NSAIDs", "Live vaccines", "CYP3A4 modulators"],
+    pregnancy: "Category C — use if necessary."
+  },
+  "levetiracetam": {
+    name: "Levetiracetam",
+    class: "Antiepileptic",
+    indications: ["Focal seizures", "Generalized tonic-clonic seizures", "Myoclonic seizures"],
+    mechanism: "Binds synaptic vesicle protein SV2A → modulates neurotransmitter release.",
+    usage: "Oral/IV: 500 mg twice daily, can be increased to 1500 mg twice daily depending on response.",
+    sideEffects: ["Somnolence", "Irritability", "Dizziness"],
+    contraindications: ["Hypersensitivity"],
+    interactions: ["Minimal clinically significant interactions"],
+    pregnancy: "Category C — use if benefits outweigh risks."
+  },
+  "lamotrigine": {
+    name: "Lamotrigine",
+    class: "Antiepileptic/mood stabilizer",
+    indications: ["Epilepsy (partial and generalized)", "Bipolar disorder maintenance"],
+    mechanism: "Inhibits voltage-gated Na+ channels → stabilizes neuronal membranes and decreases glutamate release.",
+    usage: "Oral: start low and titrate (e.g., 25 mg daily) to maintenance 100–200 mg daily; slower titration if on valproate.",
+    sideEffects: ["Rash (including Stevens–Johnson syndrome)", "Dizziness", "Ataxia"],
+    contraindications: ["History of severe rash with lamotrigine"],
+    interactions: ["Valproate — increases lamotrigine levels", "Carbamazepine — decreases levels"],
+    pregnancy: "Category C — monitor and balance seizure control vs. risk."
+  },
+  "cetirizine": {
+    name: "Cetirizine",
+    class: "Second-generation antihistamine (H1 blocker)",
+    indications: ["Allergic rhinitis", "Urticaria"],
+    mechanism: "Selective H1 receptor antagonist → reduces histamine-mediated symptoms.",
+    usage: "Oral: 10 mg once daily (adults).",
+    sideEffects: ["Mild sedation (less than 1st-gen)", "Dry mouth", "Headache"],
+    contraindications: ["Severe renal impairment (dose adjust)"],
+    interactions: ["Alcohol — additive sedation risk"],
+    pregnancy: "Category B — use if clinically needed."
+  },
+  "loratadine": {
+    name: "Loratadine",
+    class: "Second-generation antihistamine (H1 blocker)",
+    indications: ["Allergic rhinitis", "Urticaria"],
+    mechanism: "Selective peripheral H1 receptor antagonist → reduces allergic symptoms without sedation.",
+    usage: "Oral: 10 mg once daily (adults).",
+    sideEffects: ["Headache", "Dry mouth (rare)"],
+    contraindications: ["Hypersensitivity"],
+    interactions: ["Ketoconazole/erythromycin may increase levels"],
+    pregnancy: "Category B — generally considered safe."
+  },
+  "amlodipine": {
+    name: "Amlodipine",
+    class: "Dihydropyridine calcium channel blocker",
+    indications: ["Hypertension", "Chronic stable angina"],
+    mechanism: "Inhibits L-type calcium channels in vascular smooth muscle → vasodilation.",
+    usage: "Oral: 5–10 mg once daily.",
+    sideEffects: ["Peripheral edema", "Dizziness", "Flushing"],
+    contraindications: ["Severe hypotension"],
+    interactions: ["CYP3A4 inhibitors — increase levels", "Simvastatin — increased risk of myopathy at high simvastatin doses"],
+    pregnancy: "Category C — use if benefits justify risks."
+  },
+  "nifedipine": {
+    name: "Nifedipine",
+    class: "Dihydropyridine calcium channel blocker",
+    indications: ["Hypertension", "Angina (vasospastic)"],
+    mechanism: "Blocks L-type calcium channels → vascular smooth muscle relaxation.",
+    usage: "Oral: 30–60 mg once daily (extended-release formulations common).",
+    sideEffects: ["Flushing", "Headache", "Peripheral edema"],
+    contraindications: ["Severe hypotension"],
+    interactions: ["Grapefruit juice — increases levels", "Beta-blockers"],
+    pregnancy: "Category C — can be used in pregnancy for hypertension when needed."
   },
   "clindamycin": {
     name: "Clindamycin",
     class: "Lincosamide antibiotic",
-    indications: ["Anaerobic infections", "Skin infections", "Dental abscesses"],
-    mechanism: "Binds 50S ribosomal subunit → inhibits bacterial protein synthesis.",
-    sideEffects: ["Diarrhea", "C. difficile colitis"],
-    contraindications: ["History of colitis"],
-    interactions: ["Erythromycin — antagonistic effect"],
-    pregnancy: "Category B — safe."
+    indications: ["Anaerobic infections", "Skin and soft tissue infections", "Dental infections"],
+    mechanism: "Binds 50S ribosomal subunit → inhibits bacterial protein synthesis (bacteriostatic).",
+    usage: "Oral: 150–450 mg every 6–8 hours; IV: 600–900 mg every 8 hours.",
+    sideEffects: ["Diarrhea", "Pseudomembranous colitis (C. difficile)"],
+    contraindications: ["History of antibiotic-associated colitis"],
+    interactions: ["Erythromycin — antagonistic", "Neuromuscular blocking agents — enhanced effect"],
+    pregnancy: "Category B — use if indicated."
   },
-  "rifampicin": {
-    name: "Rifampicin",
-    class: "Antitubercular antibiotic",
-    indications: ["Tuberculosis", "Meningococcal prophylaxis"],
-    mechanism: "Inhibits DNA-dependent RNA polymerase in bacteria.",
-    sideEffects: ["Hepatotoxicity", "Orange discoloration of body fluids"],
-    contraindications: ["Liver disease"],
-    interactions: ["Warfarin — decreased effect", "Oral contraceptives — reduced efficacy"],
-    pregnancy: "Category C — use with caution."
-  },
-  "isoniazid": {
-    name: "Isoniazid",
-    class: "Antitubercular drug",
-    indications: ["Tuberculosis"],
-    mechanism: "Inhibits mycolic acid synthesis in mycobacterial cell wall.",
-    sideEffects: ["Hepatotoxicity", "Peripheral neuropathy (prevent with B6)"],
-    contraindications: ["Liver disease"],
-    interactions: ["Phenytoin — increased levels"],
-    pregnancy: "Category C — supplement with pyridoxine."
-  },
-  "chloroquine": {
-    name: "Chloroquine",
-    class: "Antimalarial",
-    indications: ["Malaria", "Rheumatoid arthritis"],
-    mechanism: "Prevents heme polymerization → toxic to parasite.",
-    sideEffects: ["Retinopathy", "Pruritus"],
-    contraindications: ["Psoriasis", "Retinal disease"],
-    interactions: ["Antacids — reduce absorption"],
-    pregnancy: "Safe (Category C)."
-  },
-  "acyclovir": {
-    name: "Acyclovir",
-    class: "Antiviral (Nucleoside analogue)",
-    indications: ["Herpes simplex", "Varicella zoster"],
-    mechanism: "Inhibits viral DNA polymerase after phosphorylation by viral thymidine kinase.",
-    sideEffects: ["Nephrotoxicity (IV)", "GI upset"],
-    contraindications: ["Renal impairment"],
-    interactions: ["Probenecid — increases acyclovir levels"],
-    pregnancy: "Category B — safe."
-  },
-  "oseltamivir": {
-    name: "Oseltamivir",
-    class: "Neuraminidase inhibitor (Antiviral)",
-    indications: ["Influenza A and B"],
-    mechanism: "Inhibits neuraminidase → prevents viral release from host cells.",
-    sideEffects: ["Nausea", "Vomiting"],
+  "vancomycin": {
+    name: "Vancomycin",
+    class: "Glycopeptide antibiotic",
+    indications: ["Serious Gram-positive infections", "MRSA", "Oral for C. difficile"],
+    mechanism: "Binds D-Ala-D-Ala → inhibits peptidoglycan polymerization and cell wall synthesis.",
+    usage: "IV: 15 mg/kg every 8–12 hours (adjust by level); Oral: 125–500 mg every 6 hours for C. difficile.",
+    sideEffects: ["Nephrotoxicity", "Red man syndrome (infusion-related)"],
     contraindications: ["Hypersensitivity"],
-    interactions: ["None significant"],
-    pregnancy: "Category C — use if benefits outweigh risks."
+    interactions: ["Other nephrotoxins (aminoglycosides, NSAIDs) — increased risk"],
+    pregnancy: "Category B — use if necessary."
   },
-  "fluconazole": {
-    name: "Fluconazole",
-    class: "Azole antifungal",
-    indications: ["Candidiasis", "Cryptococcal meningitis"],
-    mechanism: "Inhibits fungal CYP450 enzyme → impairs ergosterol synthesis.",
-    sideEffects: ["Hepatotoxicity", "QT prolongation"],
-    contraindications: ["Liver disease"],
-    interactions: ["Warfarin — increased INR", "Phenytoin — increased levels"],
-    pregnancy: "Avoid in 1st trimester (Category D)."
+  "gentamicin": {
+    name: "Gentamicin",
+    class: "Aminoglycoside antibiotic",
+    indications: ["Severe Gram-negative infections", "Synergy for endocarditis (with beta-lactam)"],
+    mechanism: "Binds 30S ribosomal subunit → inhibits protein synthesis (bactericidal).",
+    usage: "IV/IM: dosing weight-based (e.g., 3–5 mg/kg/day once-daily dosing common); adjust for renal function.",
+    sideEffects: ["Nephrotoxicity", "Ototoxicity (vestibular/cochlear)"],
+    contraindications: ["Pre-existing renal impairment (use caution)"],
+    interactions: ["Loop diuretics — increased ototoxicity", "Vancomycin — additive nephrotoxicity"],
+    pregnancy: "Category D — use only if life-saving."
   },
-  "albendazole": {
-    name: "Albendazole",
-    class: "Anthelmintic",
-    indications: ["Helminth infections", "Neurocysticercosis"],
-    mechanism: "Inhibits microtubule synthesis in parasites.",
-    sideEffects: ["Abdominal pain", "Elevated liver enzymes"],
-    contraindications: ["Pregnancy (1st trimester)"],
-    interactions: ["Dexamethasone — increases plasma levels"],
-    pregnancy: "Avoid in 1st trimester (Category C)."
+  "insulin lispro": {
+    name: "Insulin Lispro",
+    class: "Rapid-acting insulin analog",
+    indications: ["Type 1 and Type 2 diabetes requiring prandial insulin"],
+    mechanism: "Binds insulin receptor → promotes glucose uptake; rapid onset for mealtime coverage.",
+    usage: "Subcutaneous: give within 15 minutes before or immediately after meals; dose individualized.",
+    sideEffects: ["Hypoglycemia", "Weight gain", "Injection site reactions"],
+    contraindications: ["Hypoglycemia", "Allergy to insulin excipients"],
+    interactions: ["Beta-blockers — mask hypoglycemia signs", "Alcohol — increased hypoglycemia risk"],
+    pregnancy: "Category B — safe with monitoring."
   },
-  "nitrofurantoin": {
-    name: "Nitrofurantoin",
-    class: "Urinary antiseptic",
-    indications: ["UTI (lower tract)"],
-    mechanism: "Inhibits bacterial enzymes and damages bacterial DNA.",
-    sideEffects: ["Pulmonary fibrosis (chronic use)", "GI upset"],
-    contraindications: ["Renal impairment", "Late pregnancy"],
-    interactions: ["Antacids — reduce absorption"],
-    pregnancy: "Avoid near term (Category B)."
+  "sitagliptin": {
+    name: "Sitagliptin",
+    class: "DPP-4 inhibitor (antidiabetic)",
+    indications: ["Type 2 diabetes mellitus (adjunct to diet/exercise)"],
+    mechanism: "Inhibits DPP-4 → prolongs incretin action (GLP-1, GIP) → increases insulin release and decreases glucagon.",
+    usage: "Oral: 100 mg once daily (adjust for renal impairment).",
+    sideEffects: ["Nasopharyngitis", "Headache", "Rare pancreatitis reports"],
+    contraindications: ["Type 1 diabetes", "Diabetic ketoacidosis"],
+    interactions: ["May interact with strong CYP3A4 inhibitors (dose adjustments rarely needed)"],
+    pregnancy: "Category B — limited data; use only if clearly needed."
   },
-  "omeprazole": {
-    name: "Omeprazole",
-    class: "PPI (Proton Pump Inhibitor)",
-    indications: ["GERD", "Peptic ulcer"],
-    mechanism: "Irreversibly inhibits H+/K+ ATPase in gastric parietal cells.",
-    sideEffects: ["Headache", "Hypomagnesemia", "B12 deficiency (long-term)"],
+  "simvastatin": {
+    name: "Simvastatin",
+    class: "HMG-CoA reductase inhibitor (statin)",
+    indications: ["Hypercholesterolemia", "Cardiovascular risk reduction"],
+    mechanism: "Inhibits HMG-CoA reductase → reduces cholesterol synthesis in the liver.",
+    usage: "Oral: 10–40 mg once daily in the evening (max 40 mg/day for most patients).",
+    sideEffects: ["Myalgia", "Liver enzyme elevation", "Rhabdomyolysis (rare)"],
+    contraindications: ["Active liver disease", "Pregnancy", "Concomitant strong CYP3A4 inhibitors (high-dose contraindications)"],
+    interactions: ["Grapefruit juice", "Macrolide antibiotics", "Amiodarone"],
+    pregnancy: "Contraindicated (Category X)."
+  },
+  "pregabalin": {
+    name: "Pregabalin",
+    class: "Anticonvulsant/neuropathic pain agent (GABA analogue)",
+    indications: ["Neuropathic pain", "Fibromyalgia", "Adjunctive therapy for partial seizures"],
+    mechanism: "Binds α2δ subunit of voltage-gated calcium channels → reduces excitatory neurotransmitter release.",
+    usage: "Oral: 75–150 mg twice daily; adjust for renal function.",
+    sideEffects: ["Dizziness", "Somnolence", "Peripheral edema", "Weight gain"],
     contraindications: ["Hypersensitivity"],
-    interactions: ["Clopidogrel — reduces efficacy"],
-    pregnancy: "Safe (Category C)."
+    interactions: ["Opioids/CNS depressants — increased sedation"], 
+    pregnancy: "Category C — weigh benefits vs risks."
   },
-  "ranitidine": {
-    name: "Ranitidine",
-    class: "H2 receptor blocker",
-    indications: ["Peptic ulcer", "GERD"],
-    mechanism: "Blocks H2 receptors → decreases gastric acid secretion.",
-    sideEffects: ["Headache", "Dizziness"],
-    contraindications: ["Porphyria"],
-    interactions: ["Warfarin — increases INR"],
-    pregnancy: "Safe (Category B)."
+  "tramadol": {
+    name: "Tramadol",
+    class: "Opioid analgesic (atypical)",
+    indications: ["Moderate to moderately severe pain"],
+    mechanism: "Weak µ-opioid receptor agonist and inhibits reuptake of norepinephrine and serotonin.",
+    usage: "Oral: 50–100 mg every 4–6 hours as needed (max 400 mg/day for immediate-release).",
+    sideEffects: ["Nausea", "Dizziness", "Constipation", "Risk of seizures (at high doses)"],
+    contraindications: ["Acute intoxication with alcohol/opioids/psychotropic drugs", "Seizure disorders (relative)"],
+    interactions: ["MAOIs — severe interactions", "SSRIs/SNRIs — serotonin syndrome risk", "CNS depressants"],
+    pregnancy: "Category C — use only if necessary."
   }
-    // <-- Add more entries here as needed (developer-only)
-  };
+};
 
-  // ---------- DOM elements ----------
-  const input = document.getElementById("drug-input");
-  const searchBtn = document.getElementById("search-btn");
-  const sampleBtn = document.getElementById("sample-btn");
-  const results = document.getElementById("results");
-  const historyList = document.getElementById("history-list");
 
-  // ---------- Helpers ----------
-  const setVisible = (el, visible) => el.classList.toggle("hidden", !visible);
-  const clean = s => (s || "").toString().trim();
-  const arrayToHtmlList = arr => {
-    if (!arr) return "<span class='small-muted'>—</span>";
-    if (Array.isArray(arr)) return "<ul style='margin:6px 0;padding-left:18px;'>" + arr.map(i => `<li>${escapeHtml(i)}</li>`).join("") + "</ul>";
-    // sometimes API returns a string with newlines: convert to paragraphs
-    return `<div style="white-space:pre-wrap">${escapeHtml(arr)}</div>`;
-  };
-  function escapeHtml(str) {
-    return String(str || "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-  }
+  //Add Drugs here
+};
 
-  function makeRow(title, valHtml) {
-    const div = document.createElement("div");
-    div.className = "result-row";
-    div.innerHTML = `<div class="result-name">${escapeHtml(title)}</div><div class="result-val">${valHtml}</div>`;
-    return div;
+// -------------------- Elements --------------------
+const searchBtn = document.getElementById("search-btn");
+const sampleBtn = document.getElementById("sample-btn");
+const input = document.getElementById("drug-input");
+const resultsDiv = document.getElementById("results");
+const historyList = document.getElementById("history-list");
+
+// -------------------- Load saved history --------------------
+let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || [];
+renderHistory();
+
+// -------------------- Core Search Logic --------------------
+function searchDrug(drugName) {
+  const key = drugName.toLowerCase().trim();
+
+  if (!key) {
+    alert("Please enter a drug name.");
+    return;
   }
 
-  // History (localStorage)
-  function renderHistory() {
-    const hist = JSON.parse(localStorage.getItem("mkf_history") || "[]");
-    historyList.innerHTML = "";
-    hist.forEach(name => {
-      const item = document.createElement("div");
-      item.className = "history-item";
-      const left = document.createElement("div");
-      left.textContent = name;
-      const right = document.createElement("div");
-      const btn = document.createElement("button");
-      btn.textContent = "Open";
-      btn.addEventListener("click", () => {
-        input.value = name;
-        doSearch(name);
-      });
-      right.appendChild(btn);
-      item.appendChild(left);
-      item.appendChild(right);
-      historyList.appendChild(item);
-    });
+  const drug = DEV_LOCAL_DB[key];
+
+  if (drug) {
+    renderDrug(drug);
+    addToHistory(drugName);
+  } else {
+    resultsDiv.classList.remove("hidden");
+    resultsDiv.innerHTML = `
+      <p style="color:#c0392b"><strong>No results found</strong> for "${drugName}".</p>
+      <p>Try another drug name or check your spelling.</p>
+    `;
   }
-  function pushHistory(name) {
-    if (!name) return;
-    let hist = JSON.parse(localStorage.getItem("mkf_history") || "[]");
-    hist = hist.filter(h => h.toLowerCase() !== name.toLowerCase());
-    hist.unshift(name);
-    localStorage.setItem("mkf_history", JSON.stringify(hist.slice(0, 30)));
+}
+
+// -------------------- Render Function --------------------
+function renderDrug(drug) {
+  resultsDiv.classList.remove("hidden");
+
+  resultsDiv.innerHTML = `
+    <h2>${drug.name || "Unknown Drug"}</h2>
+    <p><strong>Class:</strong> ${drug.class || "Information not available"}</p>
+    <p><strong>Indications:</strong> ${drug.indications ? drug.indications.join(", ") : "Information not available"}</p>
+    <p><strong>Mechanism of Action:</strong> ${drug.mechanism || "Information not available"}</p>
+    <p><strong>Usage:</strong> ${drug.usage || "Usage information not available."}</p>
+    <p><strong>Side Effects:</strong> ${drug.sideEffects ? drug.sideEffects.join(", ") : "Information not available"}</p>
+    <p><strong>Contraindications:</strong> ${drug.contraindications ? drug.contraindications.join(", ") : "Information not available"}</p>
+    <p><strong>Interactions:</strong> ${drug.interactions ? drug.interactions.join(", ") : "Information not available"}</p>
+    <p><strong>Pregnancy:</strong> ${drug.pregnancy || "Information not available"}</p>
+  `;
+}
+
+// -------------------- Search History --------------------
+function addToHistory(drugName) {
+  const formatted = drugName.trim();
+
+  if (!searchHistory.includes(formatted)) {
+    searchHistory.push(formatted);
+    localStorage.setItem("searchHistory", JSON.stringify(searchHistory)); // Save to localStorage
     renderHistory();
   }
+}
 
-  // ---------- Core: search with OpenFDA (fallback to DEV_LOCAL_DB) ----------
-  async function fetchOpenFDA(name) {
-    // OpenFDA label search: search brand_name OR generic_name
-    // NOTE: rate-limited. No API key required for basic use.
-    const q = encodeURIComponent(name);
-    const url = `https://api.fda.gov/drug/label.json?search=brand_name:${q}+OR+generic_name:${q}&limit=1`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`OpenFDA ${resp.status}`);
-    const json = await resp.json();
-    return json.results && json.results[0];
-  }
+function renderHistory() {
+  historyList.innerHTML = "";
+  searchHistory.forEach((drug) => {
+    const div = document.createElement("div");
+    div.textContent = drug;
+    div.classList.add("history-item");
+    div.style.cursor = "pointer";
+    div.onclick = () => searchDrug(drug);
+    historyList.appendChild(div);
+  });
+}
 
-  function renderFromOpenFDA(info, queryName) {
-    results.innerHTML = "";
-    const title = (info.openfda && (info.openfda.brand_name || info.openfda.generic_name))
-      ? (info.openfda.brand_name || info.openfda.generic_name).join(", ")
-      : queryName;
-    const header = document.createElement("div");
-    header.className = "field-title";
-    header.textContent = title;
-    results.appendChild(header);
-
-    const pharmClass = info.openfda && info.openfda.pharm_class_epc ? info.openfda.pharm_class_epc.join(", ") : (info.pharm_class ? info.pharm_class : "—");
-    results.appendChild(makeRow("Drug Class", escapeHtml(pharmClass)));
-
-    results.appendChild(makeRow("Indications", arrayToHtmlList(info.indications_and_usage || info.indications || "—")));
-    results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(info.mechanism_of_action || "—")));
-    results.appendChild(makeRow("Side Effects (Adverse Reactions)", arrayToHtmlList(info.adverse_reactions || info.adverse_reaction || "—")));
-    results.appendChild(makeRow("Contraindications", arrayToHtmlList(info.contraindications || "—")));
-    results.appendChild(makeRow("Interactions", arrayToHtmlList(info.drug_interactions || "—")));
-
-    // pregnancy info often under 'use_in_specific_populations' or 'pregnancy'
-    const preg = info.pregnancy || info.use_in_specific_populations || "—";
-    results.appendChild(makeRow("Pregnancy / Use in Pregnancy", arrayToHtmlList(preg)));
-
-    pushHistory(title);
-  }
-
-  function renderFromLocal(drugObj) {
-    results.innerHTML = "";
-    const header = document.createElement("div");
-    header.className = "field-title";
-    header.textContent = drugObj.name || "Unknown";
-    results.appendChild(header);
-
-    results.appendChild(makeRow("Drug Class", escapeHtml(drugObj.class || "—")));
-    results.appendChild(makeRow("Indications", arrayToHtmlList(drugObj.indications)));
-    results.appendChild(makeRow("Mechanism of Action", arrayToHtmlList(drugObj.mechanism)));
-    results.appendChild(makeRow("Side Effects", arrayToHtmlList(drugObj.sideEffects)));
-    results.appendChild(makeRow("Contraindications", arrayToHtmlList(drugObj.contraindications)));
-    results.appendChild(makeRow("Interactions", arrayToHtmlList(drugObj.interactions)));
-    results.appendChild(makeRow("Pregnancy Risk", arrayToHtmlList(drugObj.pregnancy)));
-    pushHistory(drugObj.name);
-  }
-
-  async function doSearch(rawName) {
-    const name = clean(rawName);
-    if (!name) {
-      results.innerHTML = `<div class="error">Please enter a drug name.</div>`;
-      return;
-    }
-
-    setVisible(results, true);
-    results.innerHTML = `<div class="muted">Searching online (OpenFDA)...</div>`;
-
-    // 1) Try OpenFDA
-    try {
-      const info = await fetchOpenFDA(name);
-      if (info) {
-        renderFromOpenFDA(info, name);
-        return;
-      }
-      // if no info found, fall through to local
-    } catch (err) {
-      // log but continue to local fallback
-      console.warn("OpenFDA failed:", err.message);
-    }
-
-    // 2) Fallback: Please Wait for Updates.
-    const key = name.toLowerCase();
-    if (DEV_LOCAL_DB[key]) {
-      renderFromLocal(DEV_LOCAL_DB[key]);
-      return;
-    }
-
-    // 3) Not found
-    results.innerHTML = `<div class="error">No online data found for "<strong>${escapeHtml(name)}</strong>".<br>Please Wait for Updates.</div>`;
-  }
-
-  // ---------- UI bindings ----------
-  searchBtn.addEventListener("click", () => doSearch(input.value));
-  sampleBtn.addEventListener("click", () => { input.value = "aspirin"; doSearch("aspirin"); });
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(input.value); });
-
-  // ---------- Init ----------
-  renderHistory();
+// -------------------- Event Listeners --------------------
+searchBtn.addEventListener("click", () => searchDrug(input.value));
+sampleBtn.addEventListener("click", () => {
+  input.value = "aspirin";
+  searchDrug("aspirin");
 });
-
-
-
-
-
-
-
-
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") searchDrug(input.value);
+});
