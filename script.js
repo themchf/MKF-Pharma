@@ -51,6 +51,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Warfarin", "ACE inhibitors", "Aspirin (reduces cardioprotective effect)"],
     pregnancy: "Avoid in 3rd trimester due to risk of ductus arteriosus closure."
   },
+  
   "omeprazole": {
     name: "Omeprazole",
     class: "Proton pump inhibitor (PPI)",
@@ -62,6 +63,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Clopidogrel", "Warfarin", "Ketoconazole"],
     pregnancy: "Generally considered safe (Category C)."
   },
+  
   "atorvastatin": {
     name: "Atorvastatin",
     class: "HMG-CoA reductase inhibitor (statin)",
@@ -73,6 +75,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Macrolide antibiotics", "Grapefruit juice", "Cyclosporine"],
     pregnancy: "Contraindicated (Category X)."
   },
+  
   "losartan": {
     name: "Losartan",
     class: "Angiotensin II receptor blocker (ARB)",
@@ -84,6 +87,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Potassium-sparing diuretics", "NSAIDs", "Lithium"],
     pregnancy: "Contraindicated — fetal toxicity risk (Category D)."
   },
+  
   "enalapril": {
     name: "Enalapril",
     class: "ACE inhibitor",
@@ -95,6 +99,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Potassium supplements", "NSAIDs", "Diuretics"],
     pregnancy: "Contraindicated — teratogenic (Category D)."
   },
+  
   "furosemide": {
     name: "Furosemide",
     class: "Loop diuretic",
@@ -106,6 +111,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Aminoglycosides", "NSAIDs", "Digoxin"],
     pregnancy: "Use with caution (Category C)."
   },
+  
   "hydrochlorothiazide": {
     name: "Hydrochlorothiazide",
     class: "Thiazide diuretic",
@@ -117,6 +123,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Lithium", "NSAIDs", "Antidiabetics"],
     pregnancy: "Use with caution (Category B)."
   },
+  
   "prednisolone": {
     name: "Prednisolone",
     class: "Glucocorticoid",
@@ -128,6 +135,7 @@ const DEV_LOCAL_DB = {
     interactions: ["NSAIDs", "Vaccines", "Diuretics"],
     pregnancy: "Category C — use only if benefits outweigh risks."
   },
+  
   "salbutamol": {
     name: "Salbutamol",
     class: "Short-acting beta-2 agonist (SABA)",
@@ -139,6 +147,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Beta-blockers", "MAOIs", "Diuretics (potassium loss)"],
     pregnancy: "Generally safe (Category C)."
   },
+  
   "budesonide": {
     name: "Budesonide",
     class: "Inhaled corticosteroid",
@@ -150,6 +159,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Ketoconazole", "Ritonavir"],
     pregnancy: "Category B — preferred inhaled corticosteroid in pregnancy."
   },
+  
   "insulin glargine": {
     name: "Insulin Glargine",
     class: "Long-acting insulin analog",
@@ -161,6 +171,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Beta-blockers", "Alcohol", "Corticosteroids"],
     pregnancy: "Safe under supervision (Category C)."
   },
+  
   "warfarin": {
     name: "Warfarin",
     class: "Vitamin K antagonist (anticoagulant)",
@@ -172,6 +183,7 @@ const DEV_LOCAL_DB = {
     interactions: ["NSAIDs", "Antibiotics", "Amiodarone"],
     pregnancy: "Contraindicated (Category X)."
   },
+  
   "heparin": {
     name: "Heparin",
     class: "Anticoagulant (unfractionated)",
@@ -183,6 +195,7 @@ const DEV_LOCAL_DB = {
     interactions: ["NSAIDs", "Aspirin", "Thrombolytics"],
     pregnancy: "Safe in pregnancy (Category C)."
   },
+  
   "enoxaparin": {
     name: "Enoxaparin",
     class: "Low molecular weight heparin (LMWH)",
@@ -194,6 +207,7 @@ const DEV_LOCAL_DB = {
     interactions: ["NSAIDs", "Aspirin"],
     pregnancy: "Safe (Category B)."
   },
+  
   "clopidogrel": {
     name: "Clopidogrel",
     class: "Antiplatelet (P2Y12 inhibitor)",
@@ -205,6 +219,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Omeprazole", "NSAIDs"],
     pregnancy: "Category B — use if benefits outweigh risks."
   },
+  
   "levothyroxine": {
     name: "Levothyroxine",
     class: "Synthetic thyroid hormone (T4)",
@@ -216,6 +231,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Iron", "Calcium", "Warfarin"],
     pregnancy: "Safe; dose adjustment often required (Category A)."
   },
+  
   "sertraline": {
     name: "Sertraline",
     class: "SSRI (antidepressant)",
@@ -227,6 +243,7 @@ const DEV_LOCAL_DB = {
     interactions: ["MAOIs", "Triptans", "Warfarin"],
     pregnancy: "Generally safe (Category C)."
   },
+  
   "diazepam": {
     name: "Diazepam",
     class: "Benzodiazepine",
@@ -238,6 +255,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Alcohol", "Opioids", "Other CNS depressants"],
     pregnancy: "Avoid unless necessary (Category D)."
   },
+  
   "morphine": {
     name: "Morphine",
     class: "Opioid analgesic",
@@ -249,6 +267,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Alcohol", "Benzodiazepines", "MAOIs"],
     pregnancy: "Use with caution (Category C)."
   },
+  
   "codeine": {
     name: "Codeine",
     class: "Opioid analgesic & antitussive",
@@ -260,6 +279,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Alcohol", "Benzodiazepines", "MAOIs"],
     pregnancy: "Use only if necessary (Category C)."
   },
+  
   "ceftriaxone": {
     name: "Ceftriaxone",
     class: "Cephalosporin (3rd generation antibiotic)",
@@ -271,6 +291,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Calcium-containing IV solutions"],
     pregnancy: "Safe (Category B)."
   },
+  
   "azithromycin": {
     name: "Azithromycin",
     class: "Macrolide antibiotic",
@@ -282,6 +303,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Warfarin", "Digoxin", "Antacids"],
     pregnancy: "Generally safe (Category B)."
   },
+  
   "ciprofloxacin": {
     name: "Ciprofloxacin",
     class: "Fluoroquinolone antibiotic",
@@ -293,6 +315,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Antacids", "Warfarin", "Theophylline"],
     pregnancy: "Avoid (Category C)."
   },
+  
   "metronidazole": {
     name: "Metronidazole",
     class: "Nitroimidazole antibiotic/antiprotozoal",
@@ -304,6 +327,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Alcohol", "Warfarin", "Phenytoin"],
     pregnancy: "Avoid in 1st trimester (Category B after)."
   },
+  
   "doxycycline": {
     name: "Doxycycline",
     class: "Tetracycline antibiotic",
@@ -315,6 +339,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Antacids", "Iron supplements", "Warfarin"],
     pregnancy: "Contraindicated (Category D)."
   },
+  
   "fluoxetine": {
     name: "Fluoxetine",
     class: "SSRI (antidepressant)",
@@ -326,6 +351,7 @@ const DEV_LOCAL_DB = {
     interactions: ["MAOIs", "Tramadol", "Warfarin"],
     pregnancy: "Category C — may be used if benefits outweigh risks."
   },
+  
     "lorazepam": {
     name: "Lorazepam",
     class: "Benzodiazepine",
@@ -337,6 +363,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Alcohol — additive CNS depression", "Opioids — increased respiratory depression", "CYP3A4 inhibitors"],
     pregnancy: "Category D — avoid if possible; use only if benefits justify risks."
   },
+  
   "montelukast": {
     name: "Montelukast",
     class: "Leukotriene receptor antagonist",
@@ -348,6 +375,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Phenobarbital — may reduce montelukast levels"],
     pregnancy: "Category B — use if clinically indicated."
   },
+  
   "salmeterol": {
     name: "Salmeterol",
     class: "Long-acting beta-2 agonist (LABA)",
@@ -359,6 +387,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Beta-blockers — antagonistic effect", "MAOIs — potential interactions"],
     pregnancy: "Category C — use if benefits outweigh risks."
   },
+  
   "allopurinol": {
     name: "Allopurinol",
     class: "Xanthine oxidase inhibitor",
@@ -370,6 +399,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Azathioprine/6-mercaptopurine — increased toxicity", "Warfarin"],
     pregnancy: "Category C — use if benefits justify risks."
   },
+  
   "digoxin": {
     name: "Digoxin",
     class: "Cardiac glycoside",
@@ -381,6 +411,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Diuretics (hypokalemia increases toxicity)", "Amiodarone — increases digoxin levels", "Verapamil"],
     pregnancy: "Category C — use if benefits outweigh risks."
   },
+  
   "spironolactone": {
     name: "Spironolactone",
     class: "Potassium-sparing diuretic; aldosterone antagonist",
@@ -392,6 +423,7 @@ const DEV_LOCAL_DB = {
     interactions: ["ACE inhibitors/ARBs — increased hyperkalemia risk", "NSAIDs"],
     pregnancy: "Category C — use only if benefits outweigh risks."
   },
+  
   "ranitidine": {
     name: "Ranitidine",
     class: "H2 receptor antagonist",
@@ -403,6 +435,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Drugs requiring gastric acidity for absorption may be affected"],
     pregnancy: "Category B — use if indicated."
   },
+  
   "escitalopram": {
     name: "Escitalopram",
     class: "SSRI (antidepressant)",
@@ -414,6 +447,7 @@ const DEV_LOCAL_DB = {
     interactions: ["MAOIs — serotonin syndrome risk", "NSAIDs — bleeding risk"],
     pregnancy: "Category C — weigh risks and benefits."
   },
+  
   "dexamethasone": {
     name: "Dexamethasone",
     class: "Glucocorticoid",
@@ -425,6 +459,7 @@ const DEV_LOCAL_DB = {
     interactions: ["NSAIDs — increased GI risk", "CYP3A4 inducers/inhibitors"],
     pregnancy: "Category C — use if benefits outweigh risks."
   },
+  
   "hydrocortisone": {
     name: "Hydrocortisone",
     class: "Glucocorticoid",
@@ -436,6 +471,7 @@ const DEV_LOCAL_DB = {
     interactions: ["NSAIDs", "Live vaccines", "CYP3A4 modulators"],
     pregnancy: "Category C — use if necessary."
   },
+  
   "levetiracetam": {
     name: "Levetiracetam",
     class: "Antiepileptic",
@@ -447,6 +483,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Minimal clinically significant interactions"],
     pregnancy: "Category C — use if benefits outweigh risks."
   },
+  
   "lamotrigine": {
     name: "Lamotrigine",
     class: "Antiepileptic/mood stabilizer",
@@ -458,6 +495,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Valproate — increases lamotrigine levels", "Carbamazepine — decreases levels"],
     pregnancy: "Category C — monitor and balance seizure control vs. risk."
   },
+  
   "cetirizine": {
     name: "Cetirizine",
     class: "Second-generation antihistamine (H1 blocker)",
@@ -469,6 +507,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Alcohol — additive sedation risk"],
     pregnancy: "Category B — use if clinically needed."
   },
+  
   "loratadine": {
     name: "Loratadine",
     class: "Second-generation antihistamine (H1 blocker)",
@@ -480,6 +519,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Ketoconazole/erythromycin may increase levels"],
     pregnancy: "Category B — generally considered safe."
   },
+  
   "amlodipine": {
     name: "Amlodipine",
     class: "Dihydropyridine calcium channel blocker",
@@ -491,6 +531,7 @@ const DEV_LOCAL_DB = {
     interactions: ["CYP3A4 inhibitors — increase levels", "Simvastatin — increased risk of myopathy at high simvastatin doses"],
     pregnancy: "Category C — use if benefits justify risks."
   },
+  
   "nifedipine": {
     name: "Nifedipine",
     class: "Dihydropyridine calcium channel blocker",
@@ -502,6 +543,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Grapefruit juice — increases levels", "Beta-blockers"],
     pregnancy: "Category C — can be used in pregnancy for hypertension when needed."
   },
+  
   "clindamycin": {
     name: "Clindamycin",
     class: "Lincosamide antibiotic",
@@ -513,6 +555,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Erythromycin — antagonistic", "Neuromuscular blocking agents — enhanced effect"],
     pregnancy: "Category B — use if indicated."
   },
+  
   "vancomycin": {
     name: "Vancomycin",
     class: "Glycopeptide antibiotic",
@@ -524,6 +567,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Other nephrotoxins (aminoglycosides, NSAIDs) — increased risk"],
     pregnancy: "Category B — use if necessary."
   },
+  
   "gentamicin": {
     name: "Gentamicin",
     class: "Aminoglycoside antibiotic",
@@ -535,6 +579,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Loop diuretics — increased ototoxicity", "Vancomycin — additive nephrotoxicity"],
     pregnancy: "Category D — use only if life-saving."
   },
+  
   "insulin lispro": {
     name: "Insulin Lispro",
     class: "Rapid-acting insulin analog",
@@ -546,6 +591,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Beta-blockers — mask hypoglycemia signs", "Alcohol — increased hypoglycemia risk"],
     pregnancy: "Category B — safe with monitoring."
   },
+  
   "sitagliptin": {
     name: "Sitagliptin",
     class: "DPP-4 inhibitor (antidiabetic)",
@@ -557,6 +603,7 @@ const DEV_LOCAL_DB = {
     interactions: ["May interact with strong CYP3A4 inhibitors (dose adjustments rarely needed)"],
     pregnancy: "Category B — limited data; use only if clearly needed."
   },
+  
   "simvastatin": {
     name: "Simvastatin",
     class: "HMG-CoA reductase inhibitor (statin)",
@@ -568,6 +615,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Grapefruit juice", "Macrolide antibiotics", "Amiodarone"],
     pregnancy: "Contraindicated (Category X)."
   },
+  
   "pregabalin": {
     name: "Pregabalin",
     class: "Anticonvulsant/neuropathic pain agent (GABA analogue)",
@@ -579,6 +627,7 @@ const DEV_LOCAL_DB = {
     interactions: ["Opioids/CNS depressants — increased sedation"], 
     pregnancy: "Category C — weigh benefits vs risks."
   },
+  
   "tramadol": {
     name: "Tramadol",
     class: "Opioid analgesic (atypical)",
@@ -590,9 +639,6 @@ const DEV_LOCAL_DB = {
     interactions: ["MAOIs — severe interactions", "SSRIs/SNRIs — serotonin syndrome risk", "CNS depressants"],
     pregnancy: "Category C — use only if necessary."
   }
-};
-
-
   //Add Drugs here
 };
 
@@ -679,3 +725,4 @@ sampleBtn.addEventListener("click", () => {
 input.addEventListener("keydown", (e) => {
   if (e.key === "Enter") searchDrug(input.value);
 });
+
